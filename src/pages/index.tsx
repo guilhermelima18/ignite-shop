@@ -1,10 +1,12 @@
-import { GetServerSideProps } from "next";
+import { GetStaticProps } from "next";
 import Image from "next/image";
 import Stripe from "stripe";
 import "keen-slider/keen-slider.min.css";
 import { useKeenSlider } from "keen-slider/react";
 import { HomeContainer, Product } from "../styles/home";
 import { stripe } from "../lib/stripe";
+import Link from "next/link";
+import { formatCurrency } from "../helpers/formatCurrency";
 
 type HomeProps = {
   products: {
@@ -25,23 +27,30 @@ export default function Home({ products }: HomeProps) {
     },
   });
 
+  const productsFormatted = products.map((product) => ({
+    ...product,
+    price: formatCurrency(product.price.unit_amount / 100),
+  }));
+
   return (
     <HomeContainer ref={sliderRef} className="keen-slider">
-      {products.length &&
-        products.map(({ id, name, imageUrl, price }) => (
-          <Product key={id} className="keen-slider__slide">
-            <Image src={imageUrl} width={520} height={480} alt="Camiseta" />
-            <footer>
-              <strong>{name}</strong>
-              <span>{price.unit_amount / 100}</span>
-            </footer>
-          </Product>
+      {productsFormatted.length &&
+        productsFormatted.map(({ id, name, imageUrl, price }) => (
+          <Link key={id} href={`/product/${id}`} prefetch={false}>
+            <Product className="keen-slider__slide">
+              <Image src={imageUrl} width={520} height={480} alt="Camiseta" />
+              <footer>
+                <strong>{name}</strong>
+                <span>{price}</span>
+              </footer>
+            </Product>
+          </Link>
         ))}
     </HomeContainer>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const response = await stripe.products.list({
     expand: ["data.default_price"],
   });
@@ -63,5 +72,6 @@ export const getServerSideProps: GetServerSideProps = async () => {
     props: {
       products,
     },
+    revalidate: 60 * 60 * 2, // 2 hours
   };
 };
