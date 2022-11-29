@@ -7,6 +7,7 @@ import { HomeContainer, Product } from "../styles/home";
 import { stripe } from "../lib/stripe";
 import Link from "next/link";
 import { formatCurrency } from "../helpers/formatCurrency";
+import Head from "next/head";
 
 type HomeProps = {
   products: {
@@ -33,20 +34,25 @@ export default function Home({ products }: HomeProps) {
   }));
 
   return (
-    <HomeContainer ref={sliderRef} className="keen-slider">
-      {productsFormatted.length &&
-        productsFormatted.map(({ id, name, imageUrl, price }) => (
-          <Link key={id} href={`/product/${id}`} prefetch={false}>
-            <Product className="keen-slider__slide">
-              <Image src={imageUrl} width={520} height={480} alt="Camiseta" />
-              <footer>
-                <strong>{name}</strong>
-                <span>{price}</span>
-              </footer>
-            </Product>
-          </Link>
-        ))}
-    </HomeContainer>
+    <>
+      <Head>
+        <title>Ignite Shop</title>
+      </Head>
+      <HomeContainer ref={sliderRef} className="keen-slider">
+        {productsFormatted.length &&
+          productsFormatted.map(({ id, name, imageUrl, price }) => (
+            <Link key={id} href={`/product/${id}`} prefetch={false}>
+              <Product className="keen-slider__slide">
+                <Image src={imageUrl} width={520} height={480} alt="Camiseta" />
+                <footer>
+                  <strong>{name}</strong>
+                  <span>{price}</span>
+                </footer>
+              </Product>
+            </Link>
+          ))}
+      </HomeContainer>
+    </>
   );
 }
 
